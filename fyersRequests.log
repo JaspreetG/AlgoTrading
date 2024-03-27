@@ -68,3 +68,5 @@
 {"level":"DEBUG","location":"[get_call:136] fyersModel","message":{"Status Code":200,"API":"/positions"},"timestamp":"2024-03-27 23:57:38,507+0530","service":"FyersAPIRequest"}
 {"level":"DEBUG","location":"[get_call:136] fyersModel","message":{"Status Code":200,"API":"/profile"},"timestamp":"2024-03-27 23:59:42,912+0530","service":"FyersAPIRequest"}
 {"level":"DEBUG","location":"[get_call:136] fyersModel","message":{"Status Code":200,"API":"/tradebook"},"timestamp":"2024-03-27 23:59:43,030+0530","service":"FyersAPIRequest"}
+{"level":"DEBUG","location":"[get_call:136] fyersModel","message":{"Status Code":200,"API":"/profile"},"timestamp":"2024-03-28 00:14:00,091+0530","service":"FyersAPIRequest"}
+{"level":"DEBUG","location":"[get_call:136] fyersModel","message":{"Status Code":200,"API":"/profile"},"timestamp":"2024-03-28 00:28:25,520+0530","service":"FyersAPIRequest"}
