@@ -6,7 +6,7 @@ if __name__ == "__main__":
     # authoring app, no need to run this code again
     # print(app.enable_app())
 
-    from pprint import pprint 
+    from pprint import pprint
     profile = app.get_profile()
     print('===========================================')
     if profile['code'] != 200:
@@ -20,8 +20,10 @@ if __name__ == "__main__":
     # pprint(app.get_positions())
     # pprint(app.get_trade_book())
 
-    data = app.fetch_historical_data('HDFCBANK', resolution='15', data_from='2023-03-01', data_to='2024-03-27')
+    data = app.fetch_historical_data(
+        'HDFCBANK', resolution='D', data_from='2023-01-01', data_to='2024-03-27')
     print(data)
     statergy = Statergy(data)
     accuracy, returns, trades = statergy.macd_strategy()
-    print("\033[1;32mAccuracy: {:.2f}% Returns: {:.2f}% Trades: {}\033[0m".format(accuracy * 100, returns, trades))
+    print("\033[1;32mAccuracy: {:.2f}% Returns: {:.2f}% Trades: {}\033[0m".format(
+        accuracy * 100, returns, trades))
