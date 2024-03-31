@@ -11,22 +11,6 @@ class FyersApp(BaseFyersApp):
         except:
             traceback.print_exc()
             return None
-        
-    def get_historical_data(self, symbol, resolution = 'D', data_from='2024-01-01',data_to='2024-03-27',segment='EQ',exchange='NSE'):
-        try:
-            data = {
-                "symbol": "{}:{}-{}".format(exchange, symbol, segment),
-                "resolution": resolution,
-                "date_format": "1",
-                "range_from": data_from,
-                "range_to": data_to,   
-                "cont_flag": "1",
-            }
-            fyers = self._get_model()
-            return fyers.history(data = data)
-        except:
-            traceback.print_exc()
-            return None
     
     def get_depth(self, symbol, segment='EQ', exchange='NSE'):
         data = {
@@ -81,30 +65,66 @@ class FyersApp(BaseFyersApp):
             traceback.print_exc()
             return None
         
+    def get_historical_data(self, symbol, resolution = 'D', data_from='2024-01-01',data_to='2024-03-27',segment='EQ',exchange='NSE'):
+        try:
+            data = {
+                "symbol": "{}:{}-{}".format(exchange, symbol, segment),
+                "resolution": resolution,
+                "date_format": "1",
+                "range_from": data_from,
+                "range_to": data_to,   
+                "cont_flag": "1",
+            }
+            fyers = self._get_model()
+            candles_data = fyers.history(data = data)
+            return candles_data
+        except:
+            traceback.print_exc()
+            return None
+        
+
     def fetch_historical_data(self, symbol, resolution, data_from, data_to):
         MAX_DAYS_PER_REQUEST = {
-        'D': 366, '5S': 30, '10S': 30, '15S': 30, '30S': 30, '45S': 30, 
-        '1': 100, '2': 100, '3': 100, '5': 100, '10': 100, '15': 100, 
-        '20': 100, '30': 100, '60': 100, '120': 100, '240': 100
+            'D': 366, '5S': 30, '10S': 30, '15S': 30, '30S': 30, '45S': 30,
+            '1': 100, '2': 100, '3': 100, '5': 100, '10': 100, '15': 100,
+            '20': 100, '30': 100, '60': 100, '120': 100, '240': 100
         }
-        MAX_REQUESTS_PER_SECOND = 6
-    
+        MAX_REQUESTS_PER_SECOND = 5
+
         data_from_dt, data_to_dt = pd.to_datetime(data_from), pd.to_datetime(data_to)
-        historical_data = []
-    
-        for resolution in resolution:
-            num_days = (data_to_dt - data_from_dt).days
-            num_requests = (num_days // MAX_DAYS_PER_REQUEST[resolution]) + (1 if num_days % MAX_DAYS_PER_REQUEST[resolution] != 0 else 0)
-        
-            for i in range(num_requests):
-                start_date = data_from_dt + pd.Timedelta(days=i * MAX_DAYS_PER_REQUEST[resolution])
-                end_date = min(data_from_dt + pd.Timedelta(days=(i + 1) * MAX_DAYS_PER_REQUEST[resolution] - 1), data_to_dt)
-                request_data_from, request_data_to = start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d')
+        candles_data = []
+
+        num_days = (data_to_dt - data_from_dt).days
+        num_requests = (num_days // MAX_DAYS_PER_REQUEST[resolution]) + (1 if num_days % MAX_DAYS_PER_REQUEST[resolution] != 0 else 0)
+
+        for i in range(num_requests):
+            start_date = data_from_dt + pd.Timedelta(days=i * MAX_DAYS_PER_REQUEST[resolution])
+            end_date = min(data_from_dt + pd.Timedelta(days=(i + 1) * MAX_DAYS_PER_REQUEST[resolution] - 1), data_to_dt)
+            request_data_from, request_data_to = start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d')
+
+            data = self.get_historical_data(symbol, resolution=resolution, data_from=request_data_from, data_to=request_data_to)
             
-                data = self.get_historical_data(symbol, resolution=resolution, data_from=request_data_from, data_to=request_data_to)
-                historical_data.extend(data)
             
-                if (i + 1) % MAX_REQUESTS_PER_SECOND == 0:
-                    time.sleep(1)
-    
-        return historical_data
+            
+            # TODO: Fix this issue when API dont return data in proper format
+            if isinstance(data, dict):
+                candles_data.extend(data.get('candles'))
+            else:
+                print("Error: Invalid data format received.")
+                return None
+
+            if (i + 1) % MAX_REQUESTS_PER_SECOND == 0:
+                time.sleep(2)
+
+        if not candles_data:
+            print("Error: Failed to fetch historical data.")
+            return None
+
+        historical_df = pd.DataFrame(candles_data, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
+        historical_df['timestamp'] = pd.to_datetime(historical_df['timestamp'], unit='s', origin='unix').dt.tz_localize('UTC').dt.tz_convert('Asia/Kolkata')
+        historical_df[['open', 'high', 'low', 'close']] = historical_df[['open', 'high', 'low', 'close']].astype(float)
+        historical_df['volume'] = historical_df['volume'].astype(int)
+        historical_df.set_index('timestamp', inplace=True)
+
+        return historical_df
+

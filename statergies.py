@@ -6,11 +6,7 @@ class Statergy:
         self.data = data
     
     def sma_strategy(self):
-        strategy_data = pd.DataFrame(self.data['candles'], columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
-        strategy_data['timestamp'] = pd.to_datetime(strategy_data['timestamp'], unit='s', origin='unix').dt.tz_localize('UTC').dt.tz_convert('Asia/Kolkata')
-        strategy_data.set_index('timestamp', inplace=True)
-        strategy_data[['open', 'high', 'low', 'close']] = strategy_data[['open', 'high', 'low', 'close']].astype(float)
-        strategy_data['volume'] = strategy_data['volume'].astype(int)
+        strategy_data = self.data;
         strategy_data['SMA_20'] = strategy_data['close'].rolling(window=20).mean()
         strategy_data['SMA_50'] = strategy_data['close'].rolling(window=50).mean()
         strategy_data['ATR_20'] = strategy_data['high'].rolling(window=20).mean() - strategy_data['low'].rolling(window=20).mean()
@@ -48,11 +44,7 @@ class Statergy:
     
 
     def macd_strategy(self):
-        strategy_data = pd.DataFrame(self.data['candles'], columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
-        strategy_data['timestamp'] = pd.to_datetime(strategy_data['timestamp'], unit='s', origin='unix').dt.tz_localize('UTC').dt.tz_convert('Asia/Kolkata')
-        strategy_data.set_index('timestamp', inplace=True)
-        strategy_data[['open', 'high', 'low', 'close']] = strategy_data[['open', 'high', 'low', 'close']].astype(float)
-        strategy_data['volume'] = strategy_data['volume'].astype(int)
+        strategy_data = self.data;
     
         # Calculate MACD line
         strategy_data['EMA_12'] = strategy_data['close'].ewm(span=12, min_periods=0, adjust=False).mean()

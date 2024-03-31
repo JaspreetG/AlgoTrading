@@ -20,10 +20,8 @@ if __name__ == "__main__":
     # pprint(app.get_positions())
     # pprint(app.get_trade_book())
 
-    data = app.fetch_historical_data('SBIN', resolution='D', data_from='2023-04-01', data_to='2024-03-27')
-    pprint(data)
-
-    statergy = Statergy(data);
+    data = app.fetch_historical_data('HDFCBANK', resolution='15', data_from='2023-03-01', data_to='2024-03-27')
+    print(data)
+    statergy = Statergy(data)
     accuracy, returns, trades = statergy.macd_strategy()
     print("\033[1;32mAccuracy: {:.2f}% Returns: {:.2f}% Trades: {}\033[0m".format(accuracy * 100, returns, trades))
-
