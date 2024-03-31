@@ -8,10 +8,12 @@ if __name__ == "__main__":
 
     from pprint import pprint
     profile = app.get_profile()
-    print('===========================================')
+    print('===========================')
     if profile['code'] != 200:
-        print("\033[91mError in loading profile\033[0m")
+        print("\033[1;31mERROR IN LOADING PROFILE\033[0m")
         exit(1)
+    else:
+        print("\033[1;32mPROFILE LOADED SUCCESSFULLY\033[0m")
     # pprint(app.get_quote(['SBIN', 'RELIANCE']))
     # pprint(app.get_depth('SBIN'))
     # pprint(app.get_funds())
@@ -21,9 +23,9 @@ if __name__ == "__main__":
     # pprint(app.get_trade_book())
 
     data = app.fetch_historical_data(
-        'HDFCBANK', resolution='D', data_from='2023-01-01', data_to='2024-03-27')
+        'SBIN', resolution='15', data_from='2023-03-01', data_to='2024-03-27')
     print(data)
     statergy = Statergy(data)
-    accuracy, returns, trades = statergy.macd_strategy()
+    accuracy, returns, trades = statergy.sma_strategy()
     print("\033[1;32mAccuracy: {:.2f}% Returns: {:.2f}% Trades: {}\033[0m".format(
         accuracy * 100, returns, trades))

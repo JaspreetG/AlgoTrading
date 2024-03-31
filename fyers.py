@@ -111,10 +111,14 @@ class FyersApp(BaseFyersApp):
             data = self.get_historical_data(
                 symbol, resolution=resolution, data_from=request_data_from, data_to=request_data_to)
 
-            while 'candles' not in data:
+            while data['code'] == 429:
                 time.sleep(2)
                 data = self.get_historical_data(
                     symbol, resolution=resolution, data_from=request_data_from, data_to=request_data_to)
+
+            if data['code'] != 200:
+                print('\033[1;31;40mERROR IN FETCHING DATA\033[0;0m')
+                return exit(1)
             candles_data.extend(data['candles'])
 
             if (i + 1) % MAX_REQUESTS_PER_SECOND == 0:
