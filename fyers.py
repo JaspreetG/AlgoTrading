@@ -67,10 +67,10 @@ class FyersApp(BaseFyersApp):
             traceback.print_exc()
             return None
 
-    def get_historical_data(self, symbol, resolution='D', data_from='2024-01-01', data_to='2024-03-27', segment='EQ', exchange='NSE'):
+    def get_historical_data(self, symbol, resolution='D', data_from='2024-01-01', data_to='2024-03-27'):
         try:
             data = {
-                "symbol": "{}:{}-{}".format(exchange, symbol, segment),
+                "symbol": symbol,
                 "resolution": resolution,
                 "date_format": "1",
                 "range_from": data_from,

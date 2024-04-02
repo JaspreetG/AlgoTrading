@@ -23,8 +23,8 @@ if __name__ == "__main__":
     # pprint(app.get_trade_book())
 
     data = app.fetch_historical_data(
-        'SBIN', resolution='15', data_from='2023-03-01', data_to='2024-03-27')
-    print(data)
+        'NSE:BANKNIFTY24APRFUT', resolution='60', data_from='2023-01-01', data_to='2024-03-27')
+    print(data.head(20))
     statergy = Statergy(data)
     accuracy, returns, trades = statergy.sma_strategy()
     print("\033[1;32mAccuracy: {:.2f}% Returns: {:.2f}% Trades: {}\033[0m".format(
