@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 
-class Stat:
+class Strategy:
     def __init__(self, data):
         self.data = data
 
@@ -15,19 +15,25 @@ class Stat:
         strategy_data['ATR_20'] = strategy_data['high'].rolling(
             window=20).mean() - strategy_data['low'].rolling(window=20).mean()
         strategy_data['increment'] = np.log(
-            strategy_data['close']/strategy_data['close'].shift(1))
+            strategy_data['close'] / strategy_data['close'].shift(1))
         strategy_data.dropna(inplace=True)
 
         current_position = 0
         total_trades = 0
-        accuracy = 0
         total_log_returns = 0
+        total_profit = 0
+        total_loss = 0
+        max_profit_booked = float('-inf')
+        max_loss_booked = float('inf')
+        winning_trades = 0
+        losing_trades = 0
+        risk_free_rate = 0.07  # Annual risk-free return
 
         for i in range(len(strategy_data)):
             row = strategy_data.iloc[i]
-            prow = strategy_data.iloc[i-1]
-            prow = prow if i > 0 else row
-            if row['SMA_20'] > row['SMA_50'] and prow['SMA_20'] < row['SMA_50']:
+            prow = strategy_data.iloc[i - 1] if i > 0 else row
+
+            if row['SMA_20'] > row['SMA_50'] and prow['SMA_20'] < prow['SMA_50']:
                 if current_position == 0:
                     current_position = 1
                     buy_price = row['close']
@@ -41,16 +47,45 @@ class Stat:
                 if row['low'] <= (buy_price - stop_loss) or row['high'] >= (buy_price + target):
                     current_position = 0
                     total_trades += 1
-                    sell_price = buy_price + \
-                        target if row['high'] >= (
-                            buy_price + target) else buy_price - stop_loss
-                    accuracy += 1 if sell_price >= buy_price else 0
 
-                    print('Sell at', sell_price)
+                    sell_price = (buy_price + target) if row['high'] >= (
+                        buy_price + target) else (buy_price - stop_loss)
+                    trade_return = sell_price - buy_price
 
-        accuracy = accuracy / total_trades if total_trades > 0 else 0
+                    if trade_return > 0:
+                        total_profit += trade_return
+                        winning_trades += 1
+                        max_profit_booked = max(
+                            max_profit_booked, trade_return)
+                    else:
+                        total_loss += abs(trade_return)
+                        losing_trades += 1
+                        max_loss_booked = min(max_loss_booked, trade_return)
 
-        return accuracy, np.exp(total_log_returns), total_trades
+                    print('Sell at', sell_price, 'Profit/Loss:', trade_return)
+
+        hit_ratio = winning_trades / total_trades if total_trades > 0 else 0
+        total_return = np.exp(total_log_returns) - 1
+        average_daily_return = total_log_returns / \
+            len(strategy_data) if len(strategy_data) > 0 else 0
+        annualized_return = (1 + average_daily_return) ** 252 - 1
+        annualized_volatility = strategy_data['increment'].std() * np.sqrt(252)
+        sharpe_ratio = (annualized_return - risk_free_rate) / \
+            annualized_volatility if annualized_volatility > 0 else 0
+
+        max_profit_booked = max_profit_booked if max_profit_booked != float(
+            '-inf') else 0
+        max_loss_booked = max_loss_booked if max_loss_booked != float(
+            'inf') else 0
+
+        return {
+            'Hit Ratio': hit_ratio,
+            'Total Return': total_return,
+            'Sharpe Ratio': sharpe_ratio,
+            'Total Trades': total_trades,
+            'Max Profit Booked': max_profit_booked,
+            'Max Loss Booked': max_loss_booked,
+        }
 
     def macd_strategy(self):
         strategy_data = self.data

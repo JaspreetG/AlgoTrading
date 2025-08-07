@@ -1,5 +1,5 @@
 from fyers import FyersApp
-from statergies import Statergy
+from strategies import Statergy
 
 if __name__ == "__main__":
     app = FyersApp()
